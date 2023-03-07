@@ -27,7 +27,8 @@ DICTIONARY=enchant.Dict("en_US")
 def true_unpack(text):
     """
     Takes string of text
-    Returns unpack_by_sentence (nested list, inner lists are lists of words, each individual sentences
+    Returns unpack_by_sentence (nested list, inner lists are lists of words, each individual sentences) 
+    and unpack_by_word, lists of all words, not separated into sentences
     """
     l=[]
     flat=[]
