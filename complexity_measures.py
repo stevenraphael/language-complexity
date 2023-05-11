@@ -10,6 +10,12 @@ from nltk.tokenize import word_tokenize, sent_tokenize
 from nltk.data import find
 import numpy as np
 import gensim
+import textacy
+from textacy import preprocessing
+from textacy import extract, text_stats
+textacy.set_doc_extensions("extract")
+textacy.set_doc_extensions("text_stats.readability")
+textacy.remove_doc_extensions("extract.matches")
 
 
 from scraping import scrape
@@ -220,24 +226,35 @@ def min_mlex_cohesion(sample, model):
 def fraction_sentences(sample, threshold=30):
     return sum([len(sentence)>=threshold for sentence in sample])/len(sample)
 
-
+import nltk
+nltk.download('word2vec_sample')
+nltk.download('punkt')
+nltk.download('averaged_perceptron_tagger')
 word2vec_sample = str(find('models/word2vec_sample/pruned.word2vec.txt'))
 model = gensim.models.KeyedVectors.load_word2vec_format(word2vec_sample, binary=False)
 
 
-wiki_page=scrape("https://en.wikipedia.org/wiki/Atomic_nucleus")
-simple_wiki=scrape("https://simple.wikipedia.org/wiki/Atomic_nucleus")
+art = 'Atomic_nucleus'
+art = 'DNA'
+
+wiki_page=scrape(f"https://en.wikipedia.org/wiki/{art}")
+simple_wiki=scrape(f"https://simple.wikipedia.org/wiki/{art}")
 
 
-tokens=word_tokenize(sample.content)
+#tokens=word_tokenize(sample.content)
 
 
-
+text = preprocessing.normalize.whitespace(preprocessing.remove.punctuation(wiki_page))
+en=textacy.load_spacy_lang("en_core_web_sm", disable=("parser",))
+doc = textacy.make_spacy_doc(wiki_page, lang=en)
+print(doc._.flesch_reading_ease())
+doc = textacy.make_spacy_doc(simple_wiki, lang=en)
+print(doc._.flesch_reading_ease())
 
 sent_tokens_a, flat_a=true_unpack(wiki_page)
 sent_tokens_s, flat_s=true_unpack(simple_wiki)
 
-print("Regular wikipedia scores (page: Atomic Nucleus)")
+print(f"Regular wikipedia scores (page: {art})")
 
 
 print("average word length: ", average_length(flat_a))
@@ -253,7 +270,7 @@ print("min lexical cohesion: ",  min_mlex_cohesion(sent_tokens_a, model))
 print()
 
 
-print("Simple wikipedia scores (page: Atomic Nucleus)")
+print(f"Simple wikipedia scores (page:{art})")
 
 
 print("average word length: ", average_length(flat_s))
